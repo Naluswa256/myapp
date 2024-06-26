@@ -23,6 +23,46 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth > 640) {
+          return _buildWideScreen();
+        } else {
+          return _buildNarrowScreen();
+        }
+      },
+    );
+  }
+
+  Widget _buildWideScreen() {
+    return Scaffold(
+      body: Row(
+        children: [
+          NavigationRail(
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: _onItemTapped,
+            destinations: const <NavigationRailDestination>[
+              NavigationRailDestination(
+                icon: Icon(Icons.home),
+                label: Text('Home'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.games),
+                label: Text('Word Game'),
+              ),
+            ],
+            selectedIconTheme: IconThemeData(color: Colors.green.shade400),
+            selectedLabelTextStyle: TextStyle(color: Colors.green.shade400),
+          ),
+          Expanded(
+            child: _widgetOptions.elementAt(_selectedIndex),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNarrowScreen() {
     return Scaffold(
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(

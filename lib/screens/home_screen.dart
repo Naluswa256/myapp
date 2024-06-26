@@ -10,6 +10,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _gpaController = TextEditingController();
@@ -17,15 +18,17 @@ class _HomeScreenState extends State<HomeScreen> {
   final FirestoreService _firestoreService = FirestoreService();
 
   void _createStudent() {
-    String name = _nameController.text;
-    String id = _idController.text;
-    double gpa = double.tryParse(_gpaController.text) ?? 0.0;
+    if (_formKey.currentState!.validate()) {
+      String name = _nameController.text;
+      String id = _idController.text;
+      double gpa = double.tryParse(_gpaController.text) ?? 0.0;
 
-    _firestoreService.createStudent(name, id, gpa).then((_) {
-      Fluttertoast.showToast(msg: '$name created');
-    }).catchError((error) {
-      Fluttertoast.showToast(msg: error.toString());
-    });
+      _firestoreService.createStudent(name, id, gpa).then((_) {
+        Fluttertoast.showToast(msg: '$name created');
+      }).catchError((error) {
+        Fluttertoast.showToast(msg: error.toString());
+      });
+    }
   }
 
   void _readStudent() {
@@ -43,21 +46,25 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _updateStudent() {
-    String name = _nameController.text;
-    String id = _idController.text;
-    double gpa = double.tryParse(_gpaController.text) ?? 0.0;
+    if (_formKey.currentState!.validate()) {
+      String name = _nameController.text;
+      String id = _idController.text;
+      double gpa = double.tryParse(_gpaController.text) ?? 0.0;
 
-    _firestoreService.updateStudent(name, id, gpa).then((_) {
-      Fluttertoast.showToast(msg: '$name updated');
-    });
+      _firestoreService.updateStudent(name, id, gpa).then((_) {
+        Fluttertoast.showToast(msg: '$name updated');
+      });
+    }
   }
 
   void _deleteStudent() {
-    String id = _idController.text;
+    if (_formKey.currentState!.validate()) {
+      String id = _idController.text;
 
-    _firestoreService.deleteStudent(id).then((_) {
-      Fluttertoast.showToast(msg: 'Student with ID: $id deleted');
-    });
+      _firestoreService.deleteStudent(id).then((_) {
+        Fluttertoast.showToast(msg: 'Student with ID: $id deleted');
+      });
+    }
   }
 
   @override
@@ -73,155 +80,166 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          children: [
-            TextFormField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.green.shade400),
-                ),
-                prefixIcon: Icon(Icons.person, color: Colors.green.shade400),
-                border: const UnderlineInputBorder(),
-                labelText: 'Name',
-                labelStyle: TextStyle(color: Colors.green.shade400),
-              ),
-            ),
-            const SizedBox(height: 15),
-            TextFormField(
-              controller: _idController,
-              decoration: InputDecoration(
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.green.shade400),
-                ),
-                prefixIcon: Icon(Icons.school, color: Colors.green.shade400),
-                border: const UnderlineInputBorder(),
-                labelText: 'Student ID',
-                labelStyle: TextStyle(color: Colors.green.shade400),
-              ),
-            ),
-            const SizedBox(height: 15),
-            TextFormField(
-              controller: _gpaController,
-              decoration: InputDecoration(
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.green.shade400),
-                ),
-                prefixIcon: Icon(Icons.newspaper, color: Colors.green.shade400),
-                border: const UnderlineInputBorder(),
-                labelText: 'CGPA',
-                labelStyle: TextStyle(color: Colors.green.shade400),
-              ),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 30),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                  ),
-                  onPressed: _createStudent,
-                  child: const Text('CREATE'),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                  ),
-                  onPressed: _readStudent,
-                  child: const Text('READ'),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                  ),
-                  onPressed: _updateStudent,
-                  child: const Text('UPDATE'),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                  ),
-                  onPressed: _deleteStudent,
-                  child: const Text('DELETE'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 50),
-            const Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Name',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontWeight: FontWeight.w900),
+                TextFormField(
+                  controller: _nameController,
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Please enter Name';
+                    }
+                    return null;
+                  },
+                  decoration: InputDecoration(
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.green.shade400),
+                    ),
+                    prefixIcon: Icon(Icons.person, color: Colors.green.shade400),
+                    border: const UnderlineInputBorder(),
+                    labelText: 'Name',
+                    labelStyle: TextStyle(color: Colors.green.shade400),
                   ),
                 ),
-                Expanded(
-                  child: Text(
-                    'Student ID',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontWeight: FontWeight.w900),
+                const SizedBox(height: 15),
+                TextFormField(
+                  controller: _idController,
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Please enter Student ID';
+                    }
+                    return null;
+                  },
+                  decoration: InputDecoration(
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.green.shade400),
+                    ),
+                    prefixIcon: Icon(Icons.school, color: Colors.green.shade400),
+                    border: const UnderlineInputBorder(),
+                    labelText: 'Student ID',
+                    labelStyle: TextStyle(color: Colors.green.shade400),
                   ),
                 ),
-                Expanded(
-                  child: Text(
-                    'CGPA',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontWeight: FontWeight.w900),
+                const SizedBox(height: 15),
+                TextFormField(
+                  controller: _gpaController,
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Please enter CGPA';
+                    }
+                    return null;
+                  },
+                  decoration: InputDecoration(
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.green.shade400),
+                    ),
+                    prefixIcon: Icon(Icons.newspaper, color: Colors.green.shade400),
+                    border: const UnderlineInputBorder(),
+                    labelText: 'CGPA',
+                    labelStyle: TextStyle(color: Colors.green.shade400),
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 10.0),
-            StreamBuilder<QuerySnapshot>(
-              stream: _firestoreService.getStudentsStream(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text('No students created yet'));
-                }
-
-                return ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: snapshot.data!.docs.length,
-                  itemBuilder: (context, index) {
-                    DocumentSnapshot studentDoc = snapshot.data!.docs[index];
-                    Student student = Student.fromMap(
-                        studentDoc.data() as Map<String, dynamic>);
-                    return Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            student.name,
-                            textAlign: TextAlign.center,
-                          ),
+                const SizedBox(height: 30),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
                         ),
-                        Expanded(
-                          child: Text(
-                            student.id,
-                            textAlign: TextAlign.center,
-                          ),
+                        onPressed: _createStudent,
+                        child: const Text('CREATE'),
+                      ),
+                      SizedBox(width: 10),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
                         ),
-                        Expanded(
-                          child: Text(
-                            student.gpa.toString(),
-                            textAlign: TextAlign.center,
-                          ),
+                        onPressed: _readStudent,
+                        child: const Text('READ'),
+                      ),
+                      SizedBox(width: 10),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
                         ),
-                      ],
+                        onPressed: _updateStudent,
+                        child: const Text('UPDATE'),
+                      ),
+                      SizedBox(width: 10),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                        onPressed: _deleteStudent,
+                        child: const Text('DELETE'),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const SizedBox(height: 50),
+                const Text(
+                  'Student Records',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                StreamBuilder<QuerySnapshot>(
+                  stream: _firestoreService.getStudentsStream(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+        
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return const Center(child: Text('No students created yet'));
+                    }
+        
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: snapshot.data!.docs.length,
+                      itemBuilder: (context, index) {
+                        DocumentSnapshot studentDoc = snapshot.data!.docs[index];
+                        Student student = Student.fromMap(
+                            studentDoc.data() as Map<String, dynamic>);
+                        return Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                student.name,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                student.id,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                student.gpa.toString(),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     );
                   },
-                );
-              },
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
